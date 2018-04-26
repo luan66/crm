@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.MenuMapper" >
+
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Menu" >
+    <id column="id" property="id" />
+    <result column="text" property="text" />
+    <result column="url" property="url" />
+    <result column="parent_id" property="parentId" />
+    <!-- 用递归查询子集菜单 -->
+    <collection property="children" ofType="cn.wolfcode.crm.domain.Menu" column="id" select="getChildrensByParentId"/>
+  </resultMap>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `menu`
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.Menu" useGeneratedKeys="true" keyProperty="id" >
+    insert into `menu` (text, url, parent_id)
+    values (#{text}, #{url}, #{parentId})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Menu" >
+    update `menu`
+    set text = #{text},
+      url = #{url},
+      parent_id = #{parentId}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, text, url, parent_id
+    from `menu`
+    where id = #{id}
+  </select>
+
+  <!-- 查询所有的根元素: -->
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, text, url, parent_id
+    from `menu`
+    where parent_id is NULL
+  </select>
+
+  <!-- 查询所有的子集元素: -->
+  <select id="getChildrensByParentId" resultMap="BaseResultMap">
+      select id, text, url, parent_id
+      from `menu`
+      where parent_id = #{parentId};
+  </select>
+</mapper>

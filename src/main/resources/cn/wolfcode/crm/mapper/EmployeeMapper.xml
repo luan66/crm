@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.EmployeeMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Employee" >
+    <id column="id" property="id" />
+    <result column="username" property="username" />
+    <result column="realname" property="realname" />
+    <result column="password" property="password" />
+    <result column="tel" property="tel" />
+    <result column="email" property="email" />
+    <result column="inputtime" property="inputtime" />
+    <result column="state" property="state" />
+    <result column="admin" property="admin" />
+    <!-- 内联查部门 -->
+    <association property="deptId" javaType="cn.wolfcode.crm.domain.Department">
+      <id property="id" column="dept_id" />
+      <result property="sn" column="dept_sn" />
+      <result property="name" column="dept_name" />
+      <result property="state" column="dept_state" />
+    </association>
+    <!-- 额外查角色: -->
+    <collection property="roles" column="id" ofType="cn.wolfcode.crm.domain.Role" select="cn.wolfcode.crm.mapper.RoleMapper.selectRolesByEmployeeId"></collection>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `employee`
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.Employee" useGeneratedKeys="true" keyProperty="id" >
+    insert into `employee` (username, realname, password, tel, email, inputtime, state,
+      dept_id, admin)
+    values (#{username}, #{realname}, #{password}, #{tel}, #{email}, #{inputtime}, #{state},
+      #{deptId.id}, #{admin})
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Employee" >
+    update `employee`
+    set username = #{username},
+      realname = #{realname},
+      tel = #{tel},
+      email = #{email},
+      inputtime = #{inputtime},
+      state = #{state},
+      dept_id = #{deptId.id},
+      admin = #{admin}
+    where id = #{id}
+  </update>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, username, realname, password, tel, email, inputtime, state, dept_id, admin
+    from `employee`
+    where id = #{id}
+  </select>
+
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select e.id, e.username, e.realname, e.password, e.tel, e.email, e.inputtime, e.state, e.dept_id, e.admin,dept.id dept_id,dept.name dept_name,dept.state dept_state,dept.sn dept_sn
+    from employee e left join department dept on e.dept_id = dept.id;
+  </select>
+
+  <!-- 共用sql -->
+  <sql id="baseSql">
+    <where>
+      <if test="keyword != null and keyword != ''">
+        and (e.username like concat('%',#{keyword},'%') or e.email like concat('%',#{keyword},'%'))
+      </if>
+    </where>
+  </sql>
+  <!-- 高级查询:总条数 -->
+  <select id="queryForCount" resultType="int">
+    select count(*)
+    from employee e left join department dept on e.dept_id = dept.id
+    <include refid="baseSql"/>
+  </select>
+  <!-- 高级查询:总数据 -->
+  <select id="queryForList" resultMap="BaseResultMap" >
+    select e.id, e.username, e.realname, e.password, e.tel, e.email, e.inputtime, e.state, e.dept_id, e.admin,dept.id dept_id,dept.name dept_name,dept.state dept_state,dept.sn dept_sn
+    from employee e left join department dept on e.dept_id = dept.id
+    <include refid="baseSql"/>
+    limit #{beginIndex},#{rows};
+  </select>
+
+  <!-- 更改员工状态 -->
+  <update id="changeState">
+    update employee set state = state^1 where id = #{id}
+  </update>
+
+  <!-- 维护员工和角色的关系: -->
+  <insert id="insertRelation">
+    INSERT INTO employee_role(employee_id,role_id) values
+    <foreach collection="roles" item="role" separator=",">
+      (#{employeeId},#{role.id})
+    </foreach>
+  </insert>
+
+  <!-- 根据员工id查询角色id: -->
+  <select id="getRoleIdByEmployeeId" resultType="java.lang.Long">
+    select role_id
+    from employee_role
+    where employee_id=#{employeeId}
+  </select>
+
+    <!-- 打破员工和角色的关系: -->
+  <delete id="deleteRelation">
+    delete from employee_role where employee_id = #{employeeId}
+  </delete>
+
+   <!-- 员工导出: -->
+    <select id="queryForRedoXls" resultMap="BaseResultMap">
+      select e.id, e.username, e.realname, e.password, e.tel, e.email, e.inputtime, e.state, e.dept_id, e.admin,dept.id dept_id,dept.name dept_name,dept.state dept_state,dept.sn dept_sn
+      from employee e left join department dept on e.dept_id = dept.id
+      <include refid="baseSql"/>
+    </select>
+
+    <!-- 登录验证,根据用户名,查询员工对象 -->
+    <select id="selectByUsername" resultType="cn.wolfcode.crm.domain.Employee">
+      select id, username, realname, password, tel, email, inputtime,admin
+      from `employee`
+      where username = #{username}
+    </select>
+</mapper>

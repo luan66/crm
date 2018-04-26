@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<title>炫酷星空背景特效</title>
+	<link rel="stylesheet" type="text/css" href="css/jq22-demo.css">
+	<link rel="stylesheet" href="css/style.css">
+	<script type="text/javascript" src="../jquery/jquery-easyui/jquery.min.js"></script>
+	<style type="text/css">
+	</style>
+</head>
+<body>
+	<div class="jq22-container">
+
+		<div class="jq22-content">
+			<div id='holder'>
+				<section class="container">
+					<div class="login">
+						<h1>用户登录</h1>
+						<form method="post">
+							<p><input type="text" name="username" value="" placeholder="账号"></p>
+							<p><input type="password" name="password" value="" placeholder="密码"></p>
+							<p class="submit">
+								<input type="button" value="登录">
+								<input type="button" value="重置">
+							</p>
+						</form>
+					</div>
+				</section>
+			</div>
+		</div>
+	<script src="http://www.jq22.com/jquery/jquery-1.10.2.js"></script>
+	<script src='js/jquery.warpdrive.min.js'></script>
+
+	<script>
+        $( document ).ready( function() {
+            var settings = {
+                width: 1360,
+                height: 580,
+                autoResize: false,
+                autoResizeMinWidth: null,
+                autoResizeMaxWidth: null,
+                autoResizeMinHeight: null,
+                autoResizeMaxHeight: null,
+                addMouseControls: true,
+                addTouchControls: true,
+                hideContextMenu: true,
+                starCount: 6666,
+                starBgCount: 2222,
+                starBgColor: { r:0, g:204, b:255 },
+                starBgColorRangeMin: 20,
+                starBgColorRangeMax: 80,
+                starColor: { r:0, g:204, b:255 },
+                starColorRangeMin: 50,
+                starColorRangeMax: 100,
+                starfieldBackgroundColor: { r:5, g:5, b:14 },
+                starDirection: 1,
+                starSpeed: 20,
+                starSpeedMax: 200,
+                starSpeedAnimationDuration: 2,
+                starFov: 300,
+                starFovMin: 200,
+                starFovAnimationDuration: 2,
+                starRotationPermission: true,
+                starRotationDirection: 1,
+                starRotationSpeed: 0.0,
+                starRotationSpeedMax: 1.0,
+                starRotationAnimationDuration: 2,
+                starWarpLineLength: 2.0,
+                starWarpTunnelDiameter: 100,
+                starFollowMouseSensitivity: 0.025,
+                starFollowMouseXAxis: true,
+                starFollowMouseYAxis: true
+
+            };
+            var warpdrive = new WarpDrive( document.getElementById( 'holder' ), settings );
+		} );
+    </script>
+	</div>
+</body>
+</html>

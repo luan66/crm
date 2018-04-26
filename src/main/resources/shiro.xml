@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        ">
+
+	<!-- 01:配置Shiro的代理类:用于生成Shiro对象 -->
+	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<!-- 1:引用securityManager创建bean的对象: -->
+		<property name="securityManager" ref="securityManager"/>
+		<!-- 2:配置各种拦截:[urls] -->
+		<property name="filterChainDefinitions">
+			<value>
+				#静态资源可以匿名访问
+				/static/**=anon
+				#有些浏览器,会找tomcat的图标:
+				/favicon.ico=anon
+				#访问员工列表需要身份认证及需要拥有admin角色
+				/employee=authc,roles[admin]
+				#访问部门列表需要身份认证及需要拥有department:view的权限
+				/department=authc,perms["department:view"]
+				#当请求loginOut,会被logout捕获并清除session
+				/loginOut=logout
+				#所有的请求都需要身份认证
+				/** = authc
+			</value>
+		</property>
+		<!-- 3:配置所有拦截被拦截下的默认路径: -->
+		<property name="loginUrl" value="/login.do"/>
+		<!-- 4:重置拦截器: -->
+		<property name="filters">
+			<!-- 配置拦截: -->
+			<map>
+				<entry key="authc" value-ref="myFormFilter"/>
+			</map>
+		</property>
+	</bean>
+	<!-- 02:配置生成SecurityManager对象的bean: -->
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<property name="realm" ref="myRealm"/>
+	</bean>
+	<!-- 03:重新指定过滤器: -->
+	<bean id="myFormFilter" class="cn.wolfcode.crm.web.filter.MyFormFilter"></bean>
+
+	<!-- 04:自定义数据源:realm -->
+	<bean id="myRealm" class="cn.wolfcode.crm.realm.MyRealm">
+		<!-- 引入凭证匹配器: -->
+		<property name="credentialsMatcher" ref="credentialsMatcher"/>
+	</bean>
+
+	<!-- 05:凭证匹配器: -->
+	<bean id="credentialsMatcher" class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+		<!-- 散列算法: -->
+		<property name="hashAlgorithmName" value="md5"/>
+		<!-- 散列几次: -->
+		<property name="hashIterations" value="2"/>
+	</bean>
+
+	<!-- 06:配置cglib动态代理: -->
+	<aop:config proxy-target-class="true"></aop:config>
+
+	<!-- 使用第三方去扫描shiro注解: -->
+	<bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+		<property name="securityManager" ref="securityManager"/>
+	</bean>
+
+</beans>
